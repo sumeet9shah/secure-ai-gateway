@@ -27,7 +27,7 @@ JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
 ALGORITHM = "RS256"
 
 
-DATABASE_URL= "postgresql://keycloak:keycloakpass@localhost:5434/secure_ai_logs"
+DATABASE_URL= "YOUR DATABASE URL"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
 
