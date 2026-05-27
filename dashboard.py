@@ -16,7 +16,7 @@ KEYCLOAK_URL = "http://localhost:8080"
 REALM = "secure-ai"
 CLIENT_ID = "secure-ai-gateway"
 
-CLIENT_SECRET = "3sx1EEC4G0ULxrxRhUIJktVJULHE8EuS"
+CLIENT_SECRET = "YOUR CLIENT SECRET"
 
 if st.session_state["TOKEN"] is None:
 	st.title("Secure AI Gateway")
