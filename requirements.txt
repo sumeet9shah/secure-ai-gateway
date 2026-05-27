@@ -1,0 +1,11 @@
+streamlit
+fastapi
+uvicorn
+requests
+PyJWT
+python-jose
+pandas
+matplotlib
+pydantic
+sqlalchemy
+python-keycloak
