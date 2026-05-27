@@ -221,3 +221,30 @@ Streamlit (admin / analyst / user view)
          ↑  /stats · /audit · /blocked
     FastAPI → Streamlit dashboards
 ```
+## Key Takeaways
+
+- Built a working **AI security gateway** that intercepts and governs prompts before they reach a language model — not just a chatbot wrapper
+- Implemented **end-to-end authentication and authorisation** using industry-standard IAM (Keycloak), JWT token verification, and role-based access control enforced at both the API and UI layer
+- Designed a **threat detection engine** from scratch — normalisation, pattern matching, risk scoring, and severity classification — without relying on any third-party security library
+- Gained hands-on experience with **secure inference architecture**: the idea that an LLM should never receive unvalidated input directly from a user
+- Operated a **multi-service Linux environment** on cloud infrastructure — managing processes, ports, service restarts, and networking on an Oracle Cloud Ubuntu VM
+- Built **role-aware dashboards** that surface different data depending on who is logged in, reflecting how real security operations tools work
+- Practised **honest engineering documentation** — describing the system accurately without overstating its scale or capabilities
+
+---
+
+## Real World Relevance
+
+This project maps directly to problems that organisations face when deploying AI systems internally or externally.
+
+**Prompt injection is a real attack vector.** As companies integrate LLMs into their products, malicious users attempt to override system instructions, extract sensitive data, or bypass content policies through carefully crafted prompts. This project implements a defence layer that mirrors what production AI gateways do.
+
+**RBAC is standard in enterprise software.** Any platform handling sensitive data — whether a security tool, a financial system, or an internal AI assistant — needs to control who can see what. The role-based separation between admin, analyst, and user views here reflects how real enterprise dashboards are structured.
+
+**Audit logging is a compliance requirement.** In regulated industries, every action taken on a system must be traceable. Logging every prompt, its risk score, the user who sent it, and whether it was blocked or allowed is the foundation of AI governance — a growing requirement as AI regulation matures.
+
+**Self-hosted AI inference is increasingly relevant.** Many organisations cannot send sensitive data to external APIs for legal or security reasons. Running a local LLM behind a security gateway — as this project does with Ollama and TinyLlama — is a pattern used in enterprise and government deployments.
+
+**SOC-style monitoring applies to AI systems.** Security operations centres monitor infrastructure for threats in real time. As AI becomes part of that infrastructure, platforms like this one — combining threat detection, audit trails, and operational dashboards — represent an emerging category of tooling.
+
+---
