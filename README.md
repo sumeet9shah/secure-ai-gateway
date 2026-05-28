@@ -28,7 +28,7 @@ Score < 80 → Ollama / TinyLlama Inference
 
 ### Admin Dashboard
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Admin-Login-Dashboard.webm
+[Admin-Login-Dashboard.webm](https://github.com/user-attachments/assets/07daf403-a174-498e-b61c-0190fa674057)
 
 Shows:
 
@@ -41,7 +41,7 @@ Shows:
 
 ### Analyst Dashboard
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Analyst-Login-Dashboard.webm
+[Analyst-Login-Dashboard.webm](https://github.com/user-attachments/assets/7c06ed2a-8600-420f-a840-3e2bee21619e)
 
 Shows:
 
@@ -53,7 +53,7 @@ Shows:
 
 ### Allowed Prompt Flow
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Allowed-Prompt.webm
+[Employee1-Login-Allowed-Prompt.webm](https://github.com/user-attachments/assets/c506feac-a959-4cfd-847b-1cafe513a7fc)
 
 Shows:
 
@@ -65,9 +65,9 @@ Shows:
 
 ### Blocked Prompt Detection
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Blocked-Prompt-1.webm
+[Employee1-Login-Blocked-Prompt-1.webm](https://github.com/user-attachments/assets/5809bcd5-ce72-462d-ad18-f08c52757c4f)
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Blocked-Prompt-2.webm
+[Employee1-Login-Blocked-Prompt-2.webm](https://github.com/user-attachments/assets/adcf890a-76b5-47e6-bf61-c313901fcb08)
 
 Shows:
 
@@ -80,7 +80,7 @@ Shows:
 
 ### Failed Login Attempt
 
-https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Failed-Login-Wrong-Password.webm
+[Failed-Login-Wrong-Password.webm](https://github.com/user-attachments/assets/31fe7a8b-e8c5-4ce0-9748-8e392ad84b64)
 
 Shows:
 
