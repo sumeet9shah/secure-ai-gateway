@@ -14,7 +14,6 @@ if "ROLES" not in st.session_state:
 
 st.set_page_config(page_title="Secure AI Gateway Dashboard", layout="wide")
 
-
 BASE_URL = os.getenv("BASE_URL")
 KEYCLOAK_URL = os.getenv("KEYCLOAK_URL")
 REALM = os.getenv("REALM")
