@@ -1,41 +1,29 @@
 # Secure AI Gateway
 
-A self-hosted **AI Security Gateway** built to intercept, inspect, and govern prompts before they reach a local LLM — combining Keycloak authentication, role-based access control, threat detection, and a SOC-style monitoring dashboard. Deployed on an Oracle Cloud Ubuntu VM.
+A self-hosted **AI security gateway** that intercepts and governs every prompt before it reaches a local LLM — combining Keycloak IAM, JWT authentication, role-based access control, a threat detection engine, and a SOC-style monitoring dashboard.
+
+> Built to solve a real problem: LLMs should never receive unvalidated input directly from users.
 
 ---
 
-## Overview
+## What It Does
 
-The Secure AI Gateway sits between users and a locally hosted LLM (TinyLlama via Ollama). Every prompt passes through a security filter that scores its risk, blocks malicious inputs, and logs all activity — giving full visibility into AI usage and threats through a role-specific Streamlit dashboard.
+The gateway sits between users and a locally hosted language model (TinyLlama via Ollama). Every prompt is authenticated, authorised, scored for risk, and either blocked or forwarded to inference — with every decision logged to a database and surfaced through a role-specific dashboard.
 
 ```
 User Prompt
     ↓
-Keycloak Authentication (JWT / RS256)
+Keycloak Authentication  (JWT · RS256)
     ↓
-RBAC Authorization (admin / analyst / user)
+RBAC Authorisation  (admin / analyst / user)
     ↓
 Prompt Injection Detection + Risk Scoring
     ↓
-[ BLOCKED ] ──→ Audit Log
-    ↓ (if allowed)
-Ollama / TinyLlama Inference
-    ↓
-Response + Audit Log
+Score ≥ 80 → BLOCKED ──→ Audit Log
+Score < 80 → Ollama / TinyLlama Inference
+                ↓
+           Response + Audit Log
 ```
-
----
-
-## Features
-
-- **JWT Authentication** via Keycloak IAM — no anonymous access
-- **Role-Based Access Control (RBAC)** — `admin`, `analyst`, `user` roles with different permissions at both API and UI level
-- **Prompt Injection Detection** — pattern matching against known attack phrases with weighted risk scoring
-- **Severity Classification** — `LOW` / `MEDIUM` / `HIGH` / `CRITICAL` risk levels
-- **Secure LLM Inference** — only clean prompts reach TinyLlama via Ollama
-- **Full Audit Logging** — every request (allowed or blocked) persisted to database with timestamp, user, prompt, severity, and detected patterns
-- **SOC-style Dashboard** — Streamlit frontend with metrics, charts, audit tables, and role-specific views
-- **Cloud Hosted** — deployed on an Oracle Cloud Ubuntu VM with manually managed Linux services
 
 ---
 
@@ -45,13 +33,25 @@ Response + Audit Log
 |---|---|
 | Backend API | FastAPI |
 | Authentication | Keycloak (IAM) + JWT (RS256) |
-| Authorization | Realm Roles via RBAC |
+| Authorisation | Realm Roles via RBAC |
 | AI Inference | Ollama + TinyLlama |
-| Database | SQLAlchemy (SQL) |
+| Database | SQLAlchemy (PostgreSQL / SQLite) |
 | Frontend Dashboard | Streamlit |
 | Data Visualisation | Pandas + Matplotlib |
 | Deployment | Oracle Cloud VM (Ubuntu) |
 | Language | Python 3 |
+
+---
+
+## Features
+
+- **JWT Authentication** — Keycloak issues RS256-signed tokens; the backend fetches the public JWKS to verify every request. No anonymous access to any endpoint.
+- **Role-Based Access Control** — `admin`, `analyst`, and `user` roles enforced at both the API layer (FastAPI) and the UI layer (Streamlit). Each role sees a different dashboard.
+- **Prompt Injection Detection** — prompts are normalised (lowercased, punctuation stripped, spaces removed) then matched against a weighted pattern dictionary. Scores are summed and capped at 100.
+- **Severity Classification** — every request is classified as `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL` based on its risk score.
+- **Secure Inference** — only prompts scoring below 80 reach TinyLlama. Responses are trimmed to 500 characters before being returned.
+- **Full Audit Logging** — every request (allowed or blocked) is persisted to the database with timestamp, username, prompt, status, risk score, severity, and detected patterns.
+- **SOC-style Dashboard** — role-specific Streamlit views with metrics, charts, filterable audit tables, and a user chat interface.
 
 ---
 
@@ -60,42 +60,27 @@ Response + Audit Log
 ```
 secure-ai-gateway/
 │
-├── main.py              # FastAPI backend — auth, security engine, inference, audit logging
-├── dashboard.py         # Streamlit frontend — role-based dashboards and visualisations
-├── requirements.txt     # Python dependencies
+├── main.py          # FastAPI backend — auth, RBAC, threat detection, inference, audit logging
+├── dashboard.py     # Streamlit frontend — role-based dashboards and visualisations
+├── requirements.txt
+├── .env_example
 ├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Setup & Installation
-
-### Prerequisites
-
-- Python 3.9+
-- [Keycloak](https://www.keycloak.org/) running locally on port `8080`
-- [Ollama](https://ollama.com/) running locally with TinyLlama pulled
-- A SQL database (PostgreSQL or SQLite)
-
-### 1. Set up Keycloak
-
-- Create a realm called `secure-ai`
-- Create a client called `secure-ai-gateway`
-- Create realm roles: `admin`, `analyst`, `user`
-- Assign roles to your users
-
 ## API Endpoints
 
-| Method | Endpoint | Roles Allowed | Description |
+| Method | Endpoint | Roles | Description |
 |---|---|---|---|
 | `GET` | `/` | Public | Health check |
-| `POST` | `/chat` | admin, analyst, user | Submit prompt for secure inference |
-| `GET` | `/audit` | admin, analyst | View full audit log |
-| `GET` | `/blocked` | admin, analyst | View blocked prompt log |
-| `GET` | `/stats` | admin, analyst | Security metrics and analytics |
+| `POST` | `/chat` | admin, analyst, user | Submit prompt — runs threat detection, forwards to inference if clean |
+| `GET` | `/audit` | admin, analyst | Full audit log — all requests, allowed and blocked |
+| `GET` | `/blocked` | admin, analyst | Blocked prompts only, with detected patterns |
+| `GET` | `/stats` | admin, analyst | Aggregated metrics, severity distribution, top users, request timeline |
 
-### Example response — allowed
+### Example: Allowed Response
 
 ```json
 {
@@ -108,7 +93,7 @@ secure-ai-gateway/
 }
 ```
 
-### Example response — blocked
+### Example: Blocked Response
 
 ```json
 {
@@ -125,7 +110,7 @@ secure-ai-gateway/
 
 ## Threat Detection Engine
 
-Every prompt is normalised (lowercased, special characters stripped) before being matched against a weighted pattern dictionary. Scores are summed and capped at 100. Any prompt scoring **80 or above is blocked** before reaching the model.
+Prompts are normalised before matching — lowercased, all non-alphanumeric characters stripped, spaces removed. This prevents trivial bypasses like `byp@ss security` or `JAILBREAK`. Pattern scores are summed and hard-capped at 100.
 
 | Pattern | Risk Score |
 |---|---|
@@ -139,112 +124,149 @@ Every prompt is normalised (lowercased, special characters stripped) before bein
 | `forget previous instructions` | 80 |
 | `act as administrator` | 75 |
 
-**Severity thresholds:**
-
-| Score Range | Severity |
-|---|---|
-| 80 – 100 | CRITICAL |
-| 50 – 79 | HIGH |
-| 20 – 49 | MEDIUM |
-| 0 – 19 | LOW |
+| Score Range | Severity | Action |
+|---|---|---|
+| 80 – 100 | CRITICAL | Blocked, logged |
+| 50 – 79 | HIGH | Allowed, logged |
+| 20 – 49 | MEDIUM | Allowed, logged |
+| 0 – 19 | LOW | Allowed, logged |
 
 ---
 
-## Dashboard
+## Dashboard Views
 
-The Streamlit dashboard authenticates directly against Keycloak and renders a different view based on the user's realm role.
+Authentication happens in the Streamlit frontend itself — the app calls Keycloak's token endpoint with the user's credentials, decodes the JWT to extract realm roles, and renders the appropriate view.
 
-### Admin Dashboard
-- **Metrics row** — Total requests, allowed, blocked, critical attacks
-- **Pie chart** — Allowed vs blocked request distribution
-- **Bar chart** — Severity distribution across all requests
-- **Bar chart** — Top 5 most active users
-- **Line chart** — Request volume over time
-- **Filterable audit log table** — filter by username and severity
-- **Filterable blocked prompts table**
+### Admin
+- Metrics row: total requests, allowed, blocked, critical attacks
+- Pie chart: allowed vs blocked distribution
+- Bar chart: severity distribution
+- Bar chart: top 5 most active users
+- Line chart: request volume over time (grouped by HH:MM)
+- Filterable audit log table (filter by username and severity)
+- Filterable blocked prompts table
 
-### Analyst Dashboard
-- Blocked prompt log with full attack metadata
+### Analyst
+- Blocked prompt log with full attack metadata (prompt, patterns, risk score, severity, timestamp)
 
-### User Dashboard
-- Prompt input box with secure AI assistant interface
-- Displays AI response, risk score, and severity for each submission
+### User
+- Prompt input with secure AI assistant interface
+- Response displayed with risk score and severity classification
 
 ---
 
-## Deployment
+## Setup & Installation
 
-The platform is deployed on an **Oracle Cloud Ubuntu VM** with all services self-hosted and managed manually via Linux process management.
+### Prerequisites
+
+- Python 3.9+
+- [Keycloak](https://www.keycloak.org/) running on port `8080`
+- [Ollama](https://ollama.com/) running locally with TinyLlama pulled (`ollama pull tinyllama`)
+- PostgreSQL or SQLite
+
+### 1. Clone and Install
+
+```bash
+git clone https://github.com/your-username/secure-ai-gateway.git
+cd secure-ai-gateway
+pip install -r requirements.txt
+```
+
+### 2. Configure Keycloak
+
+- Create a realm: `secure-ai`
+- Create a client: `secure-ai-gateway`
+- Create realm roles: `admin`, `analyst`, `user`
+- Assign roles to users
+
+### 3. Environment Variables
+
+Create a `.env` file:
+
+```env
+# Backend (main.py)
+KEYCLOAK_BASE_URL=
+DATABASE_URL=
+
+# Frontend (dashboard.py)
+BASE_URL=http:
+KEYCLOAK_URL=
+REALM=
+CLIENT_ID=
+CLIENT_SECRET=
+```
+
+### 4. Run
 
 ```bash
 # Start backend
-nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+uvicorn main:app --host 0.0.0.0 --port 8000
 
 # Start dashboard
+streamlit run dashboard.py --server.port 8501
+```
+
+For background deployment on a Linux VM:
+
+```bash
+nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
 nohup streamlit run dashboard.py --server.port 8501 &
 ```
+
 ---
 
 ## System Architecture
 
-The platform is structured across five tiers, each with a distinct responsibility.
+Five distinct tiers, each with a clear responsibility.
 
 **Frontend (Streamlit)**
-Three separate dashboard views are rendered depending on the authenticated user's Keycloak realm role — admin, analyst, or user. All three views authenticate against the same Keycloak instance before any data is displayed.
+Three dashboard views rendered based on the authenticated user's Keycloak realm role. All three authenticate against the same Keycloak instance before any data is fetched.
 
 **Auth (Keycloak)**
-Keycloak issues a signed JWT (RS256) on successful login. That token is passed as a bearer header on every subsequent API call. The FastAPI backend fetches Keycloak's public JWKS to verify the token signature and extracts the user's realm roles from the payload.
+Keycloak issues a signed JWT (RS256) on successful login. That token is passed as a Bearer header on every subsequent API call. The backend caches the public JWKS (`lru_cache`) and verifies the token signature on each request, extracting realm roles from the payload.
 
 **Backend (FastAPI)**
-After token verification, the backend enforces RBAC — checking that the caller's roles permit access to the requested endpoint. The user's prompt is then passed to the threat detection engine, which normalises the text and matches it against a weighted pattern dictionary. Any prompt scoring 80 or above is blocked immediately and written to the audit log. Clean prompts continue to inference.
+After token verification, the backend enforces RBAC — checking that the caller's roles permit the requested endpoint. The prompt then passes to the threat detection engine: normalised, pattern-matched, scored. Any prompt scoring ≥ 80 is blocked and logged immediately. Clean prompts continue to inference.
 
 **Inference (Ollama + TinyLlama)**
-Prompts that pass the security filter are forwarded to a locally running Ollama instance on port 11434. TinyLlama generates a response, which is trimmed and returned to the caller along with the risk score and severity level.
+Prompts that pass the security filter are forwarded to a locally running Ollama instance on port `11434`. TinyLlama generates a response, which is trimmed to 500 characters and returned with the risk score and severity.
 
 **Storage (SQLAlchemy)**
-Every request — whether blocked or allowed — is persisted to the audit log database with a full record of timestamp, username, prompt, status, risk score, severity, and detected patterns. This table powers the `/audit`, `/blocked`, and `/stats` endpoints that feed the admin and analyst dashboards.
+Every request — blocked or allowed — is persisted to the audit log with a full record. This table powers the `/audit`, `/blocked`, and `/stats` endpoints that feed the admin and analyst dashboards.
 
-```
-Streamlit (admin / analyst / user view)
-         ↓  login
-    Keycloak IAM  →  JWT (RS256)
-         ↓  bearer token
-    FastAPI gateway  →  RBAC check
-         ↓  prompt
-  Threat detection engine
-    ↙ score ≥ 80        ↘ score < 80
- Blocked + logged     Ollama / TinyLlama
-                           ↓  response
-                      Allowed + logged
-         ↓  both paths
-    SQLAlchemy audit log
-         ↑  /stats · /audit · /blocked
-    FastAPI → Streamlit dashboards
-```
+---
+
+## Design Decisions Worth Noting
+
+**Why normalise prompts before matching?**
+Raw string matching is trivially bypassed — `JAILBREAK`, `j4ilbreak`, `jailbreak!` all evade a case-sensitive exact match. Normalisation (lowercase + strip non-alphanumeric + remove spaces) collapses most surface-level obfuscation attempts before the pattern check runs.
+
+**Why cache the JWKS?**
+The public key doesn't change on every request. Fetching it from Keycloak on every API call adds unnecessary latency and a network dependency in the hot path. `lru_cache(maxsize=1)` fetches it once and reuses it.
+
+**Why block at ≥ 80 rather than any non-zero score?**
+`act as administrator` scores 75 — this phrase might appear legitimately in a prompt about IAM or system design. A hard threshold at 80 gives the engine some tolerance for ambiguous language while still blocking high-confidence attack patterns.
+
+---
+
 ## Key Takeaways
 
-- Built a working **AI security gateway** that intercepts and governs prompts before they reach a language model — not just a chatbot wrapper
-- Implemented **end-to-end authentication and authorisation** using industry-standard IAM (Keycloak), JWT token verification, and role-based access control enforced at both the API and UI layer
-- Designed a **threat detection engine** from scratch — normalisation, pattern matching, risk scoring, and severity classification — without relying on any third-party security library
-- Gained hands-on experience with **secure inference architecture**: the idea that an LLM should never receive unvalidated input directly from a user
-- Operated a **multi-service Linux environment** on cloud infrastructure — managing processes, ports, service restarts, and networking on an Oracle Cloud Ubuntu VM
+- Built a working **AI security gateway** that intercepts and governs prompts before they reach a language model
+- Implemented **end-to-end authentication and authorisation** using Keycloak IAM, RS256 JWT verification, and RBAC enforced at both the API and UI layers
+- Designed a **threat detection engine from scratch** — normalisation, pattern matching, weighted risk scoring, and severity classification — without relying on any third-party security library
+- Understood **secure inference architecture**: why an LLM should never receive unvalidated input directly from a user
+- Operated a **multi-service Linux environment** on cloud infrastructure — managing processes, ports, and networking on an Oracle Cloud Ubuntu VM
 - Built **role-aware dashboards** that surface different data depending on who is logged in, reflecting how real security operations tools work
-- Practised **honest engineering documentation** — describing the system accurately without overstating its scale or capabilities
 
 ---
 
-## Real World Relevance
+## Real-World Relevance
 
-This project maps directly to problems that organisations face when deploying AI systems internally or externally.
+**Prompt injection is a real attack vector.** As organisations integrate LLMs into their products, attackers attempt to override system instructions, extract sensitive data, or bypass content policies through crafted prompts. This gateway implements a defence layer that mirrors what production AI security tools do.
 
-**Prompt injection is a real attack vector.** As companies integrate LLMs into their products, malicious users attempt to override system instructions, extract sensitive data, or bypass content policies through carefully crafted prompts. This project implements a defence layer that mirrors what production AI gateways do.
+**RBAC is standard in enterprise software.** Any platform handling sensitive data — internal AI assistants, security tooling, financial systems — needs to control who can see what. The role-based separation here reflects how real enterprise platforms are structured.
 
-**RBAC is standard in enterprise software.** Any platform handling sensitive data — whether a security tool, a financial system, or an internal AI assistant — needs to control who can see what. The role-based separation between admin, analyst, and user views here reflects how real enterprise dashboards are structured.
+**Audit logging is a compliance requirement.** In regulated industries, every action on a system must be traceable. Logging every prompt, its risk score, the user who sent it, and whether it was blocked is the foundation of AI governance — a growing requirement as AI regulation matures.
 
-**Audit logging is a compliance requirement.** In regulated industries, every action taken on a system must be traceable. Logging every prompt, its risk score, the user who sent it, and whether it was blocked or allowed is the foundation of AI governance — a growing requirement as AI regulation matures.
+**Self-hosted LLM inference is increasingly relevant.** Many organisations cannot send sensitive data to external APIs for legal or compliance reasons. Running a local model behind a security gateway is a pattern used in enterprise and government deployments.
 
-**Self-hosted AI inference is increasingly relevant.** Many organisations cannot send sensitive data to external APIs for legal or security reasons. Running a local LLM behind a security gateway — as this project does with Ollama and TinyLlama — is a pattern used in enterprise and government deployments.
-
-**SOC-style monitoring applies to AI systems.** Security operations centres monitor infrastructure for threats in real time. As AI becomes part of that infrastructure, platforms like this one — combining threat detection, audit trails, and operational dashboards — represent an emerging category of tooling.
-
----
