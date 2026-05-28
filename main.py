@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 import requests
 
@@ -20,14 +20,19 @@ from sqlalchemy import func, desc
 
 from collections import Counter
 
+from functools import lru_cache
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 app = FastAPI()
 
-KEYCLOAK_URL = "http://localhost:8080/realms/secure-ai"
+KEYCLOAK_URL = os.getenv("KEYCLOAK_BASE_URL")
 JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
 ALGORITHM = "RS256"
 
-
-DATABASE_URL= "YOUR DATABASE URL"
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
 
@@ -105,6 +110,7 @@ def write_log(log_data):
 	db.close()
 
 
+@lru_cache(maxsize=1)
 def get_public_key():
 	jwks = requests.get(JWKS_URL).json()
 	return jwks
@@ -241,6 +247,7 @@ async def chat(request: PromptRequest, credentials: HTTPAuthorizationCredentials
 		"status": "allowed",
 		"risk_score": risk_score,
 		"severity": severity,
+		"detected_patterns": detected_patterns,
 		"model": "tinyllama"
 	}
 
@@ -311,17 +318,14 @@ async def get_stats(credentials: HTTPAuthorizationCredentials = Depends(security
 	print(f"Stats API Access by: {username}")
 
 	if "analyst" not in roles and "admin" not in roles:
-		return {
-		"success": False,
-		"message": "Access denied"
-		}
+		raise HTTPException(status_code=403,detail="Access denied")
 
 	total_requests = db.query(AuditLog).count()
 	allowed_requests = db.query(AuditLog).filter(AuditLog.status == "allowed").count()
 
 	blocked_requests = db.query(AuditLog).filter(AuditLog.status == "blocked").count()
 
-	critical_attacks = db.query(AuditLog).filter(AuditLog.status == "CRITICAL").count()
+	critical_attacks = db.query(AuditLog).filter(AuditLog.severity == "CRITICAL").count()
 
 
 	low_count = db.query(AuditLog).filter(AuditLog.severity == "LOW").count()
@@ -353,12 +357,12 @@ async def get_stats(credentials: HTTPAuthorizationCredentials = Depends(security
 	timeline_counter = Counter(timestamps)
 	request_timeline = []
 
-	for time,count in timeline_counter.items():
+	for time,count in sorted(timeline_counter.items()):
 		request_timeline.append({"time": time, "requests": count})
 
 	return {
-		"success": True,
-		"stats": {
+			"success": True,
+			"stats": {
 			"total_requests": total_requests,
 			"allowed_requests": allowed_requests,
 			"blocked_requests": blocked_requests,
