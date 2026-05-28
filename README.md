@@ -24,6 +24,68 @@ Score < 80 → Ollama / TinyLlama Inference
                 ↓
            Response + Audit Log
 ```
+## Demo Videos
+
+### Admin Dashboard
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Admin-Login-Dashboard.webm
+
+Shows:
+
+* Full SOC-style dashboard
+* Metrics and visualisations
+* Audit monitoring
+* User activity analytics
+
+---
+
+### Analyst Dashboard
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Analyst-Login-Dashboard.webm
+
+Shows:
+
+* Threat monitoring workflow
+* Blocked prompt visibility
+* Security-focused analyst interface
+
+---
+
+### Allowed Prompt Flow
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Allowed-Prompt.webm
+
+Shows:
+
+* Successful authenticated inference
+* Risk scoring and severity classification
+* TinyLlama response generation
+
+---
+
+### Blocked Prompt Detection
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Blocked-Prompt-1.webm
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Employee1-Login-Blocked-Prompt-2.webm
+
+Shows:
+
+* Prompt injection detection
+* Real-time risk scoring
+* Automatic blocking of high-risk prompts
+* Audit logging of attacks
+
+---
+
+### Failed Login Attempt
+
+https://github.com/sumeet9shah/secure-ai-gateway/blob/main/Video/Failed-Login-Wrong-Password.webm
+
+Shows:
+
+* Authentication enforcement through Keycloak
+* Rejection of invalid credentials
 
 ---
 
