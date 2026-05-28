@@ -24,6 +24,49 @@ Score < 80 → Ollama / TinyLlama Inference
                 ↓
            Response + Audit Log
 ```
+## System Screenshots
+
+### Infrastructure Overview
+
+![Infrastructure Overview](./Screenshots/Infrastructure-System-Working-1.png)
+
+---
+
+### Filtering Logs by Username and Severity
+
+![Filtering Logs](./Screenshots/Filtering-Logs-Using-Username-Severity.png)
+
+---
+
+### Keycloak Realm Configuration
+
+![Keycloak Realm](./Screenshots/Keycloak-Realm-secure-ai.png)
+
+---
+
+### Keycloak Gateway Client
+
+![Gateway Client](./Screenshots/Keycloak-gateway-secure-ai-gateway.png)
+
+---
+
+### Realm Roles
+
+![Realm Roles](./Screenshots/Keycloak-Realm-Roles.png)
+
+---
+
+### User Management
+
+![User Management](./Screenshots/Keycloak-Realm-User.png)
+
+---
+
+### Session Details
+
+![Session Details](./Screenshots/Keycloak-Realm-Session-Detail.png)
+
+
 ## Demo Videos
 
 ### Admin Dashboard
