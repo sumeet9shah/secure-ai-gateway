@@ -95,7 +95,7 @@ Shows:
 | Authentication | Keycloak (IAM) + JWT (RS256) |
 | Authorisation | Realm Roles via RBAC |
 | AI Inference | Ollama + TinyLlama |
-| Database | SQLAlchemy (PostgreSQL / SQLite) |
+| Database | PostgreSQL |
 | Frontend Dashboard | Streamlit |
 | Data Visualisation | Pandas + Matplotlib |
 | Deployment | Oracle Cloud VM (Ubuntu) |
