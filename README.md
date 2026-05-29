@@ -6,8 +6,6 @@ A self-hosted security gateway that intercepts every prompt before it reaches a 
 
 ---
 
-<img width="143" height="150" alt="secure_ai_gateway_architecture_1" src="https://github.com/user-attachments/assets/2ce355f2-cab8-461c-9574-a586e47cad29" />
-
 ## What It Does
 
 The gateway sits between users and a locally hosted language model (TinyLlama via Ollama). Every prompt is authenticated, authorised, scored for risk, then either blocked or forwarded — with every decision logged and surfaced through a role-specific dashboard.
