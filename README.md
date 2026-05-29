@@ -204,8 +204,27 @@ The Streamlit app authenticates against Keycloak directly - it calls the token e
 
 **Storage (SQLAlchemy)** - every request is persisted to the audit log. This table feeds `/audit`, `/blocked`, and `/stats`.
 
-
 ![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
+
+---
+
+## OWASP LLM Top 10 Mapping
+
+| OWASP LLM Risk | Mitigation |
+|---|---|
+| **LLM01 - Prompt Injection** | Threat detection engine - normalisation, pattern matching, weighted risk scoring, block at ≥ 80 |
+| **LLM02 - Insecure Output Handling** | Responses trimmed to 500 characters before returning to the client |
+| **LLM06 - Sensitive Information Disclosure** | Keycloak IAM - no anonymous access, every request authenticated before reaching the model |
+| **LLM07 - Insecure Plugin Design** | RBAC enforced at both API and UI layer - roles restrict which endpoints each user can reach |
+| **LLM08 - Excessive Agency** | TinyLlama runs locally via Ollama with no external tool access and no agentic capability |
+| **LLM09 - Overreliance** | Every response returned with risk score and severity - the user sees confidence level alongside output |
+| **LLM10 - Model Theft** | Self-hosted inference - model never exposed to an external network, runs on a private Oracle Cloud VM |
+
+**Out of scope:**
+
+- **LLM03 - Training Data Poisoning** - requires controls at the model training level, outside a gateway's remit
+- **LLM04 - Model Denial of Service** - no rate limiting on the `/chat` endpoint; a known gap
+- **LLM05 - Supply Chain Vulnerabilities** - TinyLlama is pulled from the Ollama registry without checksum verification
 
 ---
 
@@ -332,4 +351,4 @@ Prompt injection is an active attack vector. As teams embed LLMs into internal t
 
 Most enterprise platforms handling sensitive data can't send it to an external API. Legal constraints, data residency requirements, and compliance obligations push organisations toward self-hosted inference. Running a local model behind an authenticated, audited gateway reflects how those deployments work.
 
-RBAC and audit logging aren't features - they're the baseline for anything touching regulated data. Every request logged with a user, a timestamp, a risk score, and a disposition is the starting point for AI governance, which regulators are beginning to require explicitly.
+RBAC and audit logging aren't features - they're the baseline for anything touching regulated data. Every request logged with a user, a timestamp, a risk score, and a disposition is the starting point for AI governance, which regulators are beginning to require explicitly. The full threat coverage and known gaps are mapped against the OWASP LLM Top 10 above.
