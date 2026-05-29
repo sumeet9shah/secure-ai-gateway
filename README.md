@@ -114,6 +114,9 @@ Shows:
 - **SOC-style Dashboard** — role-specific Streamlit views with metrics, charts, filterable audit tables, and a chat interface.
 
 ---
+## Architecture Diagram
+
+![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture.svg)
 
 ## API Endpoints
 
