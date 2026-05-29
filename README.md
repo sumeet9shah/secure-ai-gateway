@@ -245,7 +245,7 @@ The Streamlit app authenticates against Keycloak directly - it calls the token e
 - Python 3.9+
 - [Keycloak](https://www.keycloak.org/) on port `8080`
 - [Ollama](https://ollama.com/) running locally with TinyLlama pulled (`ollama pull tinyllama`)
-- PostgreSQL or SQLite
+- PostgreSQL
 
 ### 1. Clone and Install
 
