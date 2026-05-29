@@ -116,7 +116,7 @@ Shows:
 ---
 ## Architecture Diagram
 
-![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture.svg)
+![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
 
 ## API Endpoints
 
