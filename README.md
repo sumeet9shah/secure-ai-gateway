@@ -204,7 +204,7 @@ The Streamlit app authenticates against Keycloak directly - it calls the token e
 
 **Storage (SQLAlchemy)** - every request is persisted to the audit log. This table feeds `/audit`, `/blocked`, and `/stats`.
 
-![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
+![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture.svg)
 
 ---
 
