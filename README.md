@@ -114,9 +114,6 @@ Shows:
 - **SOC-style Dashboard** — role-specific Streamlit views with metrics, charts, filterable audit tables, and a chat interface.
 
 ---
-## Architecture Diagram
-
-![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
 
 ## API Endpoints
 
@@ -206,6 +203,9 @@ The Streamlit app authenticates against Keycloak directly — it calls the token
 **Inference (Ollama + TinyLlama)** — clean prompts forward to Ollama on port `11434`. Responses are trimmed to 500 characters and returned with the risk score and severity.
 
 **Storage (SQLAlchemy)** — every request is persisted to the audit log. This table feeds `/audit`, `/blocked`, and `/stats`.
+
+
+![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
 
 ---
 
