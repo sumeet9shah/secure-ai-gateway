@@ -339,16 +339,17 @@ nohup streamlit run dashboard.py --server.port 8501 &
 
 ## Key Takeaways
 
-The core challenge wasn't the code - it was understanding why each layer exists. JWT verification needs JWKS caching because fetching the public key on every request puts a network call in your hot path. The block threshold sits at 80, not 100, because `act as administrator` appears in legitimate IAM prompts. Normalising before pattern matching closes the gap between `jailbreak` and `j4ilbreak`. Each decision has a reason, and the reason comes from how these systems fail in production.
-
-The multi-service environment mattered too. Running Keycloak, FastAPI, Ollama, and Streamlit on a single Oracle Cloud VM - managing ports, background processes, and service dependencies - is a different problem from writing the application code.
+- JWT verification caches the public key from Keycloak once - fetching it on every request adds an unnecessary network call.
+- Block threshold is 80, not 100 - act as administrator scores 75 and appears in legitimate IAM prompts.
+- Normalisation before pattern matching closes the gap between jailbreak and j4ilbreak.
+- Running Keycloak, FastAPI, Ollama, and Streamlit on a single Oracle Cloud VM means managing ports, background processes, and service dependencies.
 
 ---
 
 ## Real-World Relevance
 
-Prompt injection is an active attack vector. As teams embed LLMs into internal tooling, attackers craft inputs to override system instructions, extract data, or bypass content policies. A gateway that normalises, scores, and blocks before inference is the pattern production AI security tools use - and the threats map directly to [MITRE ATLAS](https://atlas.mitre.org/) techniques AML.T0051, AML.T0054, and AML.T0056.
+- Prompt injection is a real attack - crafted inputs can override system instructions, extract data, or bypass content policies. This gateway normalises, scores, and blocks prompts before they reach the model, mirroring how production AI security tools work. Threats map to MITRE ATLAS techniques AML.T0051, AML.T0054, and AML.T0056.
 
-Most enterprise platforms handling sensitive data can't send it to an external API. Legal constraints, data residency requirements, and compliance obligations push organisations toward self-hosted inference. Running a local model behind an authenticated, audited gateway reflects how those deployments work.
+- Most enterprise platforms can't send sensitive data to an external API - legal, data residency, and compliance requirements force self-hosted inference. Running a local model behind an authenticated, audited gateway is how those deployments are built.
 
-RBAC and audit logging aren't features - they're the baseline for anything touching regulated data. Every request logged with a user, a timestamp, a risk score, and a disposition is the starting point for AI governance, which regulators are beginning to require explicitly. The full threat coverage and known gaps are mapped against the OWASP LLM Top 10 above.
+- RBAC and audit logging are the minimum bar for any system touching regulated data. Logging every request with a user, timestamp, risk score, and outcome is the foundation of AI governance - something regulators are starting to require. Full threat coverage and known gaps are mapped against the OWASP LLM Top 10 above.
