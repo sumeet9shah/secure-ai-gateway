@@ -1,6 +1,6 @@
 # Secure AI Gateway
 
-A self-hosted security gateway that intercepts every prompt before it reaches a local LLM — Keycloak IAM, JWT authentication, role-based access control, a threat detection engine, and a SOC-style monitoring dashboard.
+A self-hosted security gateway that intercepts every prompt before it reaches a local LLM - Keycloak IAM, JWT authentication, role-based access control, a threat detection engine, and a SOC-style monitoring dashboard.
 
 > LLMs should never receive unvalidated input directly from users.
 
@@ -8,7 +8,7 @@ A self-hosted security gateway that intercepts every prompt before it reaches a 
 
 ## What It Does
 
-The gateway sits between users and a locally hosted language model (TinyLlama via Ollama). Every prompt is authenticated, authorised, scored for risk, then either blocked or forwarded — with every decision logged and surfaced through a role-specific dashboard.
+The gateway sits between users and a locally hosted language model (TinyLlama via Ollama). Every prompt is authenticated, authorised, scored for risk, then either blocked or forwarded - with every decision logged and surfaced through a role-specific dashboard.
 
 ```
 User Prompt
@@ -105,13 +105,13 @@ Shows:
 
 ## Features
 
-- **JWT Authentication** — Keycloak issues RS256-signed tokens; the backend fetches the public JWKS to verify every request.
-- **Role-Based Access Control** — `admin`, `analyst`, and `user` roles enforced at the API layer (FastAPI) and UI layer (Streamlit). Each role sees a different dashboard.
-- **Prompt Injection Detection** — prompts are normalised (lowercased, punctuation stripped, spaces removed) then matched against a weighted pattern dictionary. Scores are summed and capped at 100.
-- **Severity Classification** — every request is classified as `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL` based on its risk score.
-- **Secure Inference** — only prompts scoring below 80 reach TinyLlama. Responses are trimmed to 500 characters.
-- **Full Audit Logging** — every request is persisted with timestamp, username, prompt, status, risk score, severity, and detected patterns.
-- **SOC-style Dashboard** — role-specific Streamlit views with metrics, charts, filterable audit tables, and a chat interface.
+- **JWT Authentication** - Keycloak issues RS256-signed tokens; the backend fetches the public JWKS to verify every request.
+- **Role-Based Access Control** - `admin`, `analyst`, and `user` roles enforced at the API layer (FastAPI) and UI layer (Streamlit). Each role sees a different dashboard.
+- **Prompt Injection Detection** - prompts are normalised (lowercased, punctuation stripped, spaces removed) then matched against a weighted pattern dictionary. Scores are summed and capped at 100.
+- **Severity Classification** - every request is classified as `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL` based on its risk score.
+- **Secure Inference** - only prompts scoring below 80 reach TinyLlama. Responses are trimmed to 500 characters.
+- **Full Audit Logging** - every request is persisted with timestamp, username, prompt, status, risk score, severity, and detected patterns.
+- **SOC-style Dashboard** - role-specific Streamlit views with metrics, charts, filterable audit tables, and a chat interface.
 
 ---
 
@@ -120,7 +120,7 @@ Shows:
 | Method | Endpoint | Roles | Description |
 |---|---|---|---|
 | `GET` | `/` | Public | Health check |
-| `POST` | `/chat` | admin, analyst, user | Submit prompt — threat detection, then inference if clean |
+| `POST` | `/chat` | admin, analyst, user | Submit prompt - threat detection, then inference if clean |
 | `GET` | `/audit` | admin, analyst | Full audit log |
 | `GET` | `/blocked` | admin, analyst | Blocked prompts with detected patterns |
 | `GET` | `/stats` | admin, analyst | Aggregated metrics, severity distribution, top users, request timeline |
@@ -155,7 +155,7 @@ Shows:
 
 ## Threat Detection Engine
 
-Prompts are normalised before matching — lowercased, all non-alphanumeric characters stripped, spaces removed. This defeats trivial bypasses like `byp@ss security` or `JAILBREAK`. Pattern scores are summed and capped at 100.
+Prompts are normalised before matching - lowercased, all non-alphanumeric characters stripped, spaces removed. This defeats trivial bypasses like `byp@ss security` or `JAILBREAK`. Pattern scores are summed and capped at 100.
 
 Threat patterns map to [MITRE ATLAS](https://atlas.mitre.org/) techniques AML.T0051 (LLM Prompt Injection), AML.T0054 (LLM Jailbreak), and AML.T0056 (LLM Meta Prompt Extraction).
 
@@ -182,27 +182,27 @@ Threat patterns map to [MITRE ATLAS](https://atlas.mitre.org/) techniques AML.T0
 
 ## Dashboard Views
 
-The Streamlit app authenticates against Keycloak directly — it calls the token endpoint, decodes the JWT to extract realm roles, and renders the appropriate view.
+The Streamlit app authenticates against Keycloak directly - it calls the token endpoint, decodes the JWT to extract realm roles, and renders the appropriate view.
 
-**Admin** — total requests, allowed, blocked, and critical attack counts; pie chart of allowed vs blocked; severity bar chart; top 5 active users; request volume over time; filterable audit and blocked prompt tables.
+**Admin** - total requests, allowed, blocked, and critical attack counts; pie chart of allowed vs blocked; severity bar chart; top 5 active users; request volume over time; filterable audit and blocked prompt tables.
 
-**Analyst** — blocked prompt log with full attack metadata: prompt, patterns, risk score, severity, timestamp.
+**Analyst** - blocked prompt log with full attack metadata: prompt, patterns, risk score, severity, timestamp.
 
-**User** — prompt input and response display with risk score and severity classification.
+**User** - prompt input and response display with risk score and severity classification.
 
 ---
 
 ## Architecture
 
-**Frontend (Streamlit)** — three dashboard views rendered from the authenticated user's Keycloak realm role.
+**Frontend (Streamlit)** - three dashboard views rendered from the authenticated user's Keycloak realm role.
 
-**Auth (Keycloak)** — issues a signed JWT (RS256) on login. The token travels as a Bearer header on every API call. The backend caches the public JWKS (`lru_cache`) and verifies the signature on each request.
+**Auth (Keycloak)** - issues a signed JWT (RS256) on login. The token travels as a Bearer header on every API call. The backend caches the public JWKS (`lru_cache`) and verifies the signature on each request.
 
-**Backend (FastAPI)** — verifies the token, enforces RBAC, then passes the prompt to the threat detection engine: normalised, pattern-matched, scored. Prompts scoring ≥ 80 are blocked and logged. The rest go to inference.
+**Backend (FastAPI)** - verifies the token, enforces RBAC, then passes the prompt to the threat detection engine: normalised, pattern-matched, scored. Prompts scoring ≥ 80 are blocked and logged. The rest go to inference.
 
-**Inference (Ollama + TinyLlama)** — clean prompts forward to Ollama on port `11434`. Responses are trimmed to 500 characters and returned with the risk score and severity.
+**Inference (Ollama + TinyLlama)** - clean prompts forward to Ollama on port `11434`. Responses are trimmed to 500 characters and returned with the risk score and severity.
 
-**Storage (SQLAlchemy)** — every request is persisted to the audit log. This table feeds `/audit`, `/blocked`, and `/stats`.
+**Storage (SQLAlchemy)** - every request is persisted to the audit log. This table feeds `/audit`, `/blocked`, and `/stats`.
 
 
 ![Architecture Diagram](./Screenshots/secure_ai_gateway_architecture_1.svg)
@@ -211,11 +211,11 @@ The Streamlit app authenticates against Keycloak directly — it calls the token
 
 ## Design Decisions
 
-**Why normalise before matching?** Raw string matching is trivially bypassed — `JAILBREAK`, `j4ilbreak`, `jailbreak!` all evade a case-sensitive exact match. Normalisation collapses most surface-level obfuscation before the pattern check runs.
+**Why normalise before matching?** Raw string matching is trivially bypassed - `JAILBREAK`, `j4ilbreak`, `jailbreak!` all evade a case-sensitive exact match. Normalisation collapses most surface-level obfuscation before the pattern check runs.
 
 **Why cache the JWKS?** The public key doesn't change per request. Fetching it from Keycloak on every API call adds latency and a network dependency in the hot path. `lru_cache(maxsize=1)` fetches it once.
 
-**Why block at ≥ 80?** `act as administrator` scores 75 — that phrase appears in legitimate prompts about IAM or system design. The threshold at 80 tolerates ambiguous language while blocking high-confidence attack patterns.
+**Why block at ≥ 80?** `act as administrator` scores 75 - that phrase appears in legitimate prompts about IAM or system design. The threshold at 80 tolerates ambiguous language while blocking high-confidence attack patterns.
 
 ---
 
@@ -320,9 +320,9 @@ nohup streamlit run dashboard.py --server.port 8501 &
 
 ## Key Takeaways
 
-The core challenge wasn't the code — it was understanding why each layer exists. JWT verification needs JWKS caching because fetching the public key on every request puts a network call in your hot path. The block threshold sits at 80, not 100, because `act as administrator` appears in legitimate IAM prompts. Normalising before pattern matching closes the gap between `jailbreak` and `j4ilbreak`. Each decision has a reason, and the reason comes from how these systems fail in production.
+The core challenge wasn't the code - it was understanding why each layer exists. JWT verification needs JWKS caching because fetching the public key on every request puts a network call in your hot path. The block threshold sits at 80, not 100, because `act as administrator` appears in legitimate IAM prompts. Normalising before pattern matching closes the gap between `jailbreak` and `j4ilbreak`. Each decision has a reason, and the reason comes from how these systems fail in production.
 
-The multi-service environment mattered too. Running Keycloak, FastAPI, Ollama, and Streamlit on a single Oracle Cloud VM — managing ports, background processes, and service dependencies — is a different problem from writing the application code.
+The multi-service environment mattered too. Running Keycloak, FastAPI, Ollama, and Streamlit on a single Oracle Cloud VM - managing ports, background processes, and service dependencies - is a different problem from writing the application code.
 
 ---
 
@@ -332,4 +332,4 @@ Prompt injection is an active attack vector. As teams embed LLMs into internal t
 
 Most enterprise platforms handling sensitive data can't send it to an external API. Legal constraints, data residency requirements, and compliance obligations push organisations toward self-hosted inference. Running a local model behind an authenticated, audited gateway reflects how those deployments work.
 
-RBAC and audit logging aren't features — they're the baseline for anything touching regulated data. Every request logged with a user, a timestamp, a risk score, and a disposition is the starting point for AI governance, which regulators are beginning to require explicitly.
+RBAC and audit logging aren't features - they're the baseline for anything touching regulated data. Every request logged with a user, a timestamp, a risk score, and a disposition is the starting point for AI governance, which regulators are beginning to require explicitly.
